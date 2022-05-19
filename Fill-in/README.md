@@ -12,5 +12,20 @@ Example usage:
 #....
 >>> print(crossword["words"])
 ['LZ', 'OM', 'RJ', 'ORWG', 'TMJW', 'UTOL', 'OMMZO', 'UORWZ', 'WWRMW']
-
+```
+# Fill-in solver
+Example usage:
+```python
+>>> from fill_in_solver import BacktrackingSolver
+>>> solver = BacktrackingSolver()
+>>>with open(f"puzzle.txt") as puzzle:
+>>>    print(crossword:= [list(line.strip()) for line in puzzle.readlines()])
+[['.', '.', '.'], ['.', '.', '.'], ['.', '.', '.']]
+>>> with open(f"word_list.txt") as word_list:
+>>>    print(words:= [word.strip() for word in word_list.readlines()])
+['abc', 'bde', 'cfg', 'abc', 'bdf', 'ceg']
+>>>solver.solve(crossword, words)
+abc
+bdf
+ceg
 ```
