@@ -64,6 +64,7 @@ class AbstractSolver(ABC):
 
 
 class BacktrackingSolver(AbstractSolver):
+    """Basic solver, processes gaps row by row, starting from upper left corner"""
     @staticmethod
     def group_words(words):
         words_dict = {}
@@ -99,3 +100,29 @@ class BacktrackingSolver(AbstractSolver):
             gap.fill_gap(crossword, missing)
             option["used"] = False
         return False
+
+
+class BacktrackingDiagonalSolver(BacktrackingSolver):
+    """Processes gaps diagonally, starting from upper left corner"""
+    def solve(self, crossword: list[list[str]], words: [str]) -> list[list[str]]:
+        grid = deepcopy(crossword)
+        gaps = sorted(self.get_gaps(grid), key=lambda gap: gap.row + gap.column)
+        if self._check(grid, self.group_words(words), gaps):
+            return grid
+
+
+class BacktrackingByLengthSolver(BacktrackingSolver):
+    """Processes gaps starting from longest"""
+    def solve(self, crossword: list[list[str]], words: [str]) -> list[list[str]]:
+        grid = deepcopy(crossword)
+        gaps_by_length = {}
+        for gap in self.get_gaps(grid):
+            gaps_by_length[gap.length] = gaps_by_length.get(gap.length, []) + [gap]
+        gaps = []
+        for length in sorted(gaps_by_length, reverse=True):
+            if 1 == len(gaps_by_length[length]):
+                gaps = gaps_by_length[length] + gaps
+            else:
+                gaps += gaps_by_length[length]
+        if self._check(grid, self.group_words(words), gaps):
+            return grid

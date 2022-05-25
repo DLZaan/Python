@@ -9,7 +9,7 @@ import fill_in_solver
 
 def main():
     tests = []
-    for i in range(4):
+    for i in range(1):
         with (
             open(f"tests/puzzle{i}.txt") as puzzle,
             open(f"tests/words{i}.txt") as words,
@@ -23,8 +23,6 @@ def main():
                 }
             )
 
-    pr = cProfile.Profile()
-    solver = fill_in_solver.BacktrackingSolver()
     for i, test in enumerate(tests):
         crossword = test["crossword"]
         words = test["words"]
@@ -32,19 +30,26 @@ def main():
         print(f"TEST {i}")
         print(f"Crossword size = {len(crossword)}x{len(crossword[0])}")
         print(f"Words to fill = {len(words)}")
-
-        pr.enable()
-        result = solver.solve(crossword, words)
-        pr.disable()
-
-        if len(result) != len(solution):
-            print("Crossword solved with errors - wrong number of rows!")
-        elif any("".join(row) != solution[i] for i, row in enumerate(result)):
-            print("Crossword solved with errors - fill missmatch!")
-        else:
-            print("Crossword solved correctly!")
-        print(f"Backtracking solver stats:")
-        pstats.Stats(pr).sort_stats(pstats.SortKey.CUMULATIVE).print_stats(0.1)
+        for solver in (
+            fill_in_solver.BacktrackingSolver(),
+            fill_in_solver.BacktrackingDiagonalSolver(),
+            fill_in_solver.BacktrackingByLengthSolver(),
+        ):
+            pr = cProfile.Profile()
+            pr.enable()
+            result = solver.solve(crossword, words)
+            pr.disable()
+            print("-" * 88)
+            print(f"{solver.__class__.__name__} stats:")
+            if result is None:
+                print("Correct solution cannot be found!")
+            elif len(result) != len(solution):
+                print("Crossword solved with errors - wrong number of rows!")
+            elif any("".join(row) != solution[i] for i, row in enumerate(result)):
+                print("Crossword solved with errors - fill missmatch!")
+            else:
+                print("Crossword solved correctly!")
+            pstats.Stats(pr).sort_stats(pstats.SortKey.CUMULATIVE).print_stats(0.1)
         print("=" * 88)
 
 
