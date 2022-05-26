@@ -4,12 +4,13 @@ This script runs solver tests (with benchmarking)
 import cProfile
 import pstats
 
+import fill_in_generator
 import fill_in_solver
 
 
 def main():
     tests = []
-    for i in range(1):
+    for i in range(6):
         with (
             open(f"tests/puzzle{i}.txt") as puzzle,
             open(f"tests/words{i}.txt") as words,
@@ -23,6 +24,12 @@ def main():
                 }
             )
 
+    solvers = [
+            fill_in_solver.BacktrackingSolver(),
+            fill_in_solver.BacktrackingDiagonalSolver(),
+            fill_in_solver.BacktrackingByLengthSolver(),
+        ]
+
     for i, test in enumerate(tests):
         crossword = test["crossword"]
         words = test["words"]
@@ -30,11 +37,7 @@ def main():
         print(f"TEST {i}")
         print(f"Crossword size = {len(crossword)}x{len(crossword[0])}")
         print(f"Words to fill = {len(words)}")
-        for solver in (
-            fill_in_solver.BacktrackingSolver(),
-            fill_in_solver.BacktrackingDiagonalSolver(),
-            fill_in_solver.BacktrackingByLengthSolver(),
-        ):
+        for solver in solvers:
             pr = cProfile.Profile()
             pr.enable()
             result = solver.solve(crossword, words)
@@ -52,6 +55,16 @@ def main():
             pstats.Stats(pr).sort_stats(pstats.SortKey.CUMULATIVE).print_stats(0.1)
         print("=" * 88)
 
+def add_test(i, height, width, seed, sparsity):
+    grid = fill_in_generator.generate_grid(height, width, seed, sparsity)
+    crossword = fill_in_generator.fill_crossword(grid, seed)
+    words_list = fill_in_generator.extract_words(crossword)
+    with open(f"tests/puzzle{i}.txt", "w") as puzzle:
+        puzzle.write("\n".join(["".join(row) for row in grid]))
+    with open(f"tests/solution{i}.txt", "w") as solution:
+        solution.write("\n".join(["".join(row) for row in crossword]))
+    with open(f"tests/words{i}.txt", "w") as words:
+        words.writelines(word + "\n" for word in words_list)
 
 if __name__ == "__main__":
     main()
