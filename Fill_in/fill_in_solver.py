@@ -30,6 +30,8 @@ class _Gap:
 
 
 class AbstractSolver(ABC):
+    """Abstract fill-in solver - children need to implement solve() function"""
+
     def __init__(self, separator: str = "#"):
         self.separator = separator
 
@@ -65,6 +67,7 @@ class AbstractSolver(ABC):
 
 class BacktrackingSolver(AbstractSolver):
     """Basic solver, processes gaps row by row, starting from upper left corner"""
+
     @staticmethod
     def group_words(words):
         words_dict = {}
@@ -104,6 +107,7 @@ class BacktrackingSolver(AbstractSolver):
 
 class BacktrackingDiagonalSolver(BacktrackingSolver):
     """Processes gaps diagonally, starting from upper left corner"""
+
     def solve(self, crossword: list[list[str]], words: [str]) -> list[list[str]]:
         grid = deepcopy(crossword)
         gaps = sorted(self.get_gaps(grid), key=lambda gap: gap.row + gap.column)
@@ -113,6 +117,7 @@ class BacktrackingDiagonalSolver(BacktrackingSolver):
 
 class BacktrackingByLengthSolver(BacktrackingSolver):
     """Processes gaps starting from longest"""
+
     def solve(self, crossword: list[list[str]], words: [str]) -> list[list[str]]:
         grid = deepcopy(crossword)
         gaps_by_length = {}

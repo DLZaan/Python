@@ -7,6 +7,8 @@ import pstats
 import fill_in_generator
 import fill_in_solver
 
+SCREEN_WIDTH = 88
+
 
 def main():
     tests = []
@@ -25,10 +27,10 @@ def main():
             )
 
     solvers = [
-            fill_in_solver.BacktrackingSolver(),
-            fill_in_solver.BacktrackingDiagonalSolver(),
-            fill_in_solver.BacktrackingByLengthSolver(),
-        ]
+        fill_in_solver.BacktrackingSolver(),
+        fill_in_solver.BacktrackingDiagonalSolver(),
+        fill_in_solver.BacktrackingByLengthSolver(),
+    ]
 
     for i, test in enumerate(tests):
         crossword = test["crossword"]
@@ -38,11 +40,11 @@ def main():
         print(f"Crossword size = {len(crossword)}x{len(crossword[0])}")
         print(f"Words to fill = {len(words)}")
         for solver in solvers:
+            print("-" * SCREEN_WIDTH)
             pr = cProfile.Profile()
             pr.enable()
             result = solver.solve(crossword, words)
             pr.disable()
-            print("-" * 88)
             print(f"{solver.__class__.__name__} stats:")
             if result is None:
                 print("Correct solution cannot be found!")
@@ -53,7 +55,8 @@ def main():
             else:
                 print("Crossword solved correctly!")
             pstats.Stats(pr).sort_stats(pstats.SortKey.CUMULATIVE).print_stats(0.1)
-        print("=" * 88)
+        print("=" * SCREEN_WIDTH)
+
 
 def add_test(i, height, width, seed, sparsity):
     grid = fill_in_generator.generate_grid(height, width, seed, sparsity)
@@ -65,6 +68,7 @@ def add_test(i, height, width, seed, sparsity):
         solution.write("\n".join(["".join(row) for row in crossword]))
     with open(f"tests/words{i}.txt", "w") as words:
         words.writelines(word + "\n" for word in words_list)
+
 
 if __name__ == "__main__":
     main()
