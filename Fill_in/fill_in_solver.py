@@ -1,6 +1,7 @@
 """
 Classes for solving fill-in crosswords puzzles.
 """
+from __future__ import annotations
 
 import re
 from abc import ABC, abstractmethod
@@ -13,6 +14,11 @@ class _Gap:
         self.column = column
         self.length = length
         self.vertical = vertical
+        self._end = (self.row if self.vertical else self.column) + self.length - 1
+
+    @property
+    def end(self):
+        return self._end
 
     def get_gap(self, grid: list[list]) -> [str]:
         return (
@@ -27,6 +33,14 @@ class _Gap:
                 grid[self.row + i][self.column] = word[i]
         else:
             grid[self.row][self.column : self.column + self.length] = list(word)
+
+    def intersects(self, gap: _Gap) -> bool:
+        ver, hor = (self, gap) if self.vertical else (gap, self)
+        return (
+            self.vertical != gap.vertical
+            and ver.row <= hor.row <= ver.end
+            and hor.column <= ver.column <= hor.end
+        )
 
 
 class AbstractSolver(ABC):
@@ -131,3 +145,44 @@ class BacktrackingByLengthSolver(BacktrackingSolver):
                 gaps += gaps_by_length[length]
         if self._check(grid, self.group_words(words), gaps):
             return grid
+
+
+class ForwardChecking(BacktrackingSolver):
+    """Forward Checking for Backtracking solvers"""
+
+    def _check(
+        self,
+        crossword: list[list[str]],
+        words_dict: dict[int, list[dict]],
+        gaps: [_Gap],
+    ) -> bool:
+        if not gaps:
+            return True
+        gap = gaps[0]
+        missing = "".join(gap.get_gap(crossword))
+
+        for option in filter(
+            lambda word: (not word["used"]) and re.match(missing, word["word"]),
+            words_dict[gap.length],
+        ):
+            option["used"] = True
+            gap.fill_gap(crossword, option["word"])
+            fc_passed = True
+            for cross_gap in gaps[1:]:
+                if not gap.intersects(cross_gap):
+                    continue
+                cross_missing = "".join(cross_gap.get_gap(crossword))
+                if not any(
+                    filter(
+                        lambda word: (not word["used"])
+                        and re.match(cross_missing, word["word"]),
+                        words_dict[cross_gap.length],
+                    )
+                ):
+                    fc_passed = False
+                    break
+            if fc_passed and self._check(crossword, words_dict, gaps[1:]):
+                return True
+            gap.fill_gap(crossword, missing)
+            option["used"] = False
+        return False

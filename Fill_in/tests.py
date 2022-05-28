@@ -7,7 +7,7 @@ import pstats
 import fill_in_generator
 import fill_in_solver
 
-SCREEN_WIDTH = 88
+OUTPUT_WIDTH = 88
 
 
 def main():
@@ -30,6 +30,7 @@ def main():
         fill_in_solver.BacktrackingSolver(),
         fill_in_solver.BacktrackingDiagonalSolver(),
         fill_in_solver.BacktrackingByLengthSolver(),
+        fill_in_solver.ForwardChecking(),
     ]
 
     for i, test in enumerate(tests):
@@ -40,7 +41,7 @@ def main():
         print(f"Crossword size = {len(crossword)}x{len(crossword[0])}")
         print(f"Words to fill = {len(words)}")
         for solver in solvers:
-            print("-" * SCREEN_WIDTH)
+            print("-" * OUTPUT_WIDTH)
             pr = cProfile.Profile()
             pr.enable()
             result = solver.solve(crossword, words)
@@ -55,7 +56,7 @@ def main():
             else:
                 print("Crossword solved correctly!")
             pstats.Stats(pr).sort_stats(pstats.SortKey.CUMULATIVE).print_stats(0.1)
-        print("=" * SCREEN_WIDTH)
+        print("=" * OUTPUT_WIDTH)
 
 
 def add_test(i, height, width, seed, sparsity):
