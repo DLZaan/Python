@@ -31,6 +31,8 @@ def main():
         fill_in_solver.BacktrackingDiagonalSolver(),
         fill_in_solver.BacktrackingByLengthSolver(),
         fill_in_solver.ForwardChecking(),
+        fill_in_solver.BacktrackingDiagonalFCSolver(),
+        fill_in_solver.BacktrackingByLengthFCSolver(),
     ]
 
     for i, test in enumerate(tests):

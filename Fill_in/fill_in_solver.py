@@ -186,3 +186,11 @@ class ForwardChecking(BacktrackingSolver):
             gap.fill_gap(crossword, missing)
             option["used"] = False
         return False
+
+
+class BacktrackingDiagonalFCSolver(BacktrackingDiagonalSolver, ForwardChecking):
+    """Processes gaps diagonally, with Forward Checking"""
+
+
+class BacktrackingByLengthFCSolver(BacktrackingByLengthSolver, ForwardChecking):
+    """Processes gaps starting from longest, with Forward Checking"""
