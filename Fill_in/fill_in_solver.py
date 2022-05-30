@@ -79,8 +79,7 @@ class AbstractSolver(ABC):
         return list(filter(lambda gap: 1 < gap.length, gaps))
 
 
-class BacktrackingSolver(AbstractSolver):
-    """Basic solver, processes gaps row by row, starting from upper left corner"""
+class AbstractBacktrackingSolver(AbstractSolver, ABC):
 
     @staticmethod
     def group_words(words):
@@ -90,11 +89,6 @@ class BacktrackingSolver(AbstractSolver):
                 {"word": word, "used": False}
             ]
         return words_dict
-
-    def solve(self, crossword: list[list[str]], words: [str]) -> list[list[str]]:
-        grid = deepcopy(crossword)
-        if self._check(grid, self.group_words(words), self.get_gaps(grid)):
-            return grid
 
     def _check(
         self,
@@ -119,7 +113,16 @@ class BacktrackingSolver(AbstractSolver):
         return False
 
 
-class BacktrackingDiagonalSolver(BacktrackingSolver):
+class BacktrackingLinearSolver(AbstractBacktrackingSolver):
+    """Processes gaps row by row, starting from upper left corner"""
+
+    def solve(self, crossword: list[list[str]], words: [str]) -> list[list[str]]:
+        grid = deepcopy(crossword)
+        if self._check(grid, self.group_words(words), self.get_gaps(grid)):
+            return grid
+
+
+class BacktrackingDiagonalSolver(AbstractBacktrackingSolver):
     """Processes gaps diagonally, starting from upper left corner"""
 
     def solve(self, crossword: list[list[str]], words: [str]) -> list[list[str]]:
@@ -129,7 +132,7 @@ class BacktrackingDiagonalSolver(BacktrackingSolver):
             return grid
 
 
-class BacktrackingByLengthSolver(BacktrackingSolver):
+class BacktrackingByLengthSolver(AbstractBacktrackingSolver):
     """Processes gaps starting from longest"""
 
     def solve(self, crossword: list[list[str]], words: [str]) -> list[list[str]]:
@@ -147,8 +150,8 @@ class BacktrackingByLengthSolver(BacktrackingSolver):
             return grid
 
 
-class ForwardChecking(BacktrackingSolver):
-    """Forward Checking for Backtracking solvers"""
+class AbstractForwardChecking(AbstractBacktrackingSolver, ABC):
+    """Abstract Forward Checking class"""
 
     def _check(
         self,
@@ -188,9 +191,13 @@ class ForwardChecking(BacktrackingSolver):
         return False
 
 
-class BacktrackingDiagonalFCSolver(BacktrackingDiagonalSolver, ForwardChecking):
+class BFCLinearSolver(BacktrackingLinearSolver, AbstractForwardChecking):
+    """Processes gaps row by row, with Forward Checking"""
+
+
+class BFCDiagonalSolver(BacktrackingDiagonalSolver, AbstractForwardChecking):
     """Processes gaps diagonally, with Forward Checking"""
 
 
-class BacktrackingByLengthFCSolver(BacktrackingByLengthSolver, ForwardChecking):
+class BFCByLengthSolver(BacktrackingByLengthSolver, AbstractForwardChecking):
     """Processes gaps starting from longest, with Forward Checking"""

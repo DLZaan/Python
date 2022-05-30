@@ -27,12 +27,12 @@ def main():
             )
 
     solvers = [
-        fill_in_solver.BacktrackingSolver(),
+        fill_in_solver.BacktrackingLinearSolver(),
         fill_in_solver.BacktrackingDiagonalSolver(),
         fill_in_solver.BacktrackingByLengthSolver(),
-        fill_in_solver.ForwardChecking(),
-        fill_in_solver.BacktrackingDiagonalFCSolver(),
-        fill_in_solver.BacktrackingByLengthFCSolver(),
+        fill_in_solver.BFCLinearSolver(),
+        fill_in_solver.BFCDiagonalSolver(),
+        fill_in_solver.BFCByLengthSolver(),
     ]
 
     for i, test in enumerate(tests):
