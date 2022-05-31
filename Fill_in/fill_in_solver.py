@@ -80,7 +80,6 @@ class AbstractSolver(ABC):
 
 
 class AbstractBacktrackingSolver(AbstractSolver, ABC):
-
     @staticmethod
     def group_words(words):
         words_dict = {}
@@ -158,33 +157,40 @@ class AbstractForwardChecking(AbstractBacktrackingSolver, ABC):
         crossword: list[list[str]],
         words_dict: dict[int, list[dict]],
         gaps: [_Gap],
+        options: [dict] = None,
     ) -> bool:
         if not gaps:
             return True
         gap = gaps[0]
         missing = "".join(gap.get_gap(crossword))
 
-        for option in filter(
-            lambda word: (not word["used"]) and re.match(missing, word["word"]),
-            words_dict[gap.length],
-        ):
+        if options is None:
+            options = [
+                word
+                for word in words_dict[gap.length]
+                if (not word["used"]) and re.match(missing, word["word"])
+            ]
+
+        for option in options:
             option["used"] = True
             gap.fill_gap(crossword, option["word"])
+            next_options = None
             fc_passed = True
-            for cross_gap in gaps[1:]:
+            for i, cross_gap in enumerate(gaps[1:]):
                 if not gap.intersects(cross_gap):
                     continue
                 cross_missing = "".join(cross_gap.get_gap(crossword))
-                if not any(
-                    filter(
-                        lambda word: (not word["used"])
-                        and re.match(cross_missing, word["word"]),
-                        words_dict[cross_gap.length],
-                    )
-                ):
+                possibilities = [
+                    word
+                    for word in words_dict[cross_gap.length]
+                    if (not word["used"]) and re.match(cross_missing, word["word"])
+                ]
+                if not possibilities:
                     fc_passed = False
                     break
-            if fc_passed and self._check(crossword, words_dict, gaps[1:]):
+                if 0 == i:
+                    next_options = possibilities
+            if fc_passed and self._check(crossword, words_dict, gaps[1:], next_options):
                 return True
             gap.fill_gap(crossword, missing)
             option["used"] = False
